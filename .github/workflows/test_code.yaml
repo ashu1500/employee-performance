@@ -6,6 +6,8 @@ on:
       - training/**
       - application/**
       - .github/workflows/test_training.yaml
+  workflow_dispatch:
+  
 jobs:
   test_model:
     name: Test processed code and model
