@@ -1,0 +1,5 @@
+outs:
+- md5: 43dfbd1959caaa4ba6b0a51a707b5dd1.dir
+  size: 122609
+  nfiles: 23
+  path: outputs
