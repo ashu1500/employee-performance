@@ -8,6 +8,8 @@ on:
       - training/**
       - application/**
       - .github/workflows/deploy_app.yaml
+  workflow_dispatch:
+  
 jobs:
   deploy_app:
     name: Deploy App
