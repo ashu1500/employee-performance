@@ -1,0 +1,6 @@
+artifact_location: mlflow-artifacts:/431968125156249751
+creation_time: 1684476367054
+experiment_id: '431968125156249751'
+last_update_time: 1684476367054
+lifecycle_stage: active
+name: employee-churn
