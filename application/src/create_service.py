@@ -6,10 +6,11 @@ from hydra import compose, initialize
 from patsy import dmatrix
 from pydantic import BaseModel
 
-with initialize( config_path="../../config"):
+with initialize(config_path="../../config"):
     config = compose(config_name="main")
     FEATURES = config.process.features
     MODEL_NAME = config.model.name
+
 
 class Employee(BaseModel):
     City: str = "Pune"
@@ -18,6 +19,7 @@ class Employee(BaseModel):
     Gender: str = "Female"
     EverBenched: str = "No"
     ExperienceInCurrentDomain: int = 1
+
 
 def add_dummy_data(df: pd.DataFrame):
     """Add dummy rows so that patsy can create features similar to the train dataset"""
@@ -32,11 +34,13 @@ def add_dummy_data(df: pd.DataFrame):
     dummy_df = pd.DataFrame(rows)
     return pd.concat([df, dummy_df])
 
+
 def rename_columns(X: pd.DataFrame):
     X.columns = X.columns.str.replace("[", "_", regex=True).str.replace(
         "]", "", regex=True
     )
     return X
+
 
 def transform_data(df: pd.DataFrame):
     """Transform the data"""
@@ -46,11 +50,13 @@ def transform_data(df: pd.DataFrame):
     dummy_X = rename_columns(dummy_X)
     return dummy_X.iloc[0, :].values.reshape(1, -1)
 
+
 model = bentoml.picklable_model.load_runner(
     f"{MODEL_NAME}:latest", method_name="predict"
 )
 # Create service with the model
 service = bentoml.Service("predict_employee", runners=[model])
+
 
 @service.api(input=JSON(pydantic_model=Employee), output=NumpyNdarray())
 def predict(employee: Employee) -> np.ndarray:
