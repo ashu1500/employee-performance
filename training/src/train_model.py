@@ -1,10 +1,7 @@
 import warnings
-
 warnings.filterwarnings(action="ignore")
-
 from functools import partial
 from typing import Callable
-
 import hydra
 import joblib
 import numpy as np
@@ -15,14 +12,12 @@ from omegaconf import DictConfig
 from sklearn.metrics import accuracy_score
 from xgboost import XGBClassifier
 
-
 def load_data(path: DictConfig):
     X_train = pd.read_csv(abspath(path.X_train.path))
     X_test = pd.read_csv(abspath(path.X_test.path))
     y_train = pd.read_csv(abspath(path.y_train.path))
     y_test = pd.read_csv(abspath(path.y_test.path))
     return X_train, X_test, y_train, y_test
-
 
 def get_objective(
     X_train: pd.DataFrame,
@@ -32,7 +27,6 @@ def get_objective(
     config: DictConfig,
     space: dict,
 ):
-
     model = XGBClassifier(
         use_label_encoder=config.model.use_label_encoder,
         objective=config.model.objective,
@@ -43,9 +37,7 @@ def get_objective(
         min_child_weight=int(space["min_child_weight"]),
         colsample_bytree=int(space["colsample_bytree"]),
     )
-
     evaluation = [(X_train, y_train), (X_test, y_test)]
-
     model.fit(
         X_train,
         y_train,
@@ -58,7 +50,6 @@ def get_objective(
     print("SCORE:", accuracy)
     return {"loss": -accuracy, "status": STATUS_OK, "model": model}
 
-
 def optimize(objective: Callable, space: dict):
     trials = Trials()
     best_hyperparams = fmin(
@@ -70,18 +61,13 @@ def optimize(objective: Callable, space: dict):
     )
     print("The best hyperparameters are : ", "\n")
     print(best_hyperparams)
-    best_model = trials.results[
-        np.argmin([r["loss"] for r in trials.results])
-    ]["model"]
+    best_model = trials.results[np.argmin([r["loss"] for r in trials.results])]["model"]
     return best_model
-
 
 @hydra.main(config_path="../../config", config_name="main")
 def train(config: DictConfig):
     """Function to train the model"""
-
     X_train, X_test, y_train, y_test = load_data(config.processed)
-
     # Define space
     space = {
         "max_depth": hp.quniform("max_depth", **config.model.max_depth),
@@ -100,13 +86,8 @@ def train(config: DictConfig):
     objective = partial(
         get_objective, X_train, y_train, X_test, y_test, config
     )
-
     # Find best model
     best_model = optimize(objective, space)
-
     # Save model
     joblib.dump(best_model, abspath(config.model.path))
 
-
-if __name__ == "__main__":
-    train()
